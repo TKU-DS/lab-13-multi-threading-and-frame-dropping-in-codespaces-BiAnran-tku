@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Ultralytics & Models
+*.pt
+runs/
+
+# Video & Image assets
+*.mp4
+*.jpg
+*.png
+
+# OS
+.DS_Store

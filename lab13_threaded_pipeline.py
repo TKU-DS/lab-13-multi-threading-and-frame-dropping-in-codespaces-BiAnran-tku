@@ -25,7 +25,8 @@ def download_video():
 # TODO 1: Initialize a thread-safe queue with maxsize=1
 # This ensures we only hold the absolute freshest frame.
 # ---------------------------------------------------------
-frame_queue = None # Placeholder, replace with queue.Queue(maxsize=1)
+# frame_queue = None # Placeholder, replace with queue.Queue(maxsize=1)
+frame_queue = queue.Queue(maxsize=1)
 
 # A thread-safe flag to gracefully stop all threads
 stop_event = threading.Event()
@@ -55,7 +56,15 @@ def producer_thread(video_path):
         #     frame_queue.put_nowait(frame)
         # except queue.Full:
         #     ... your drop logic here ...
-        pass # Placeholder
+        # pass # Placeholder
+        try:
+            frame_queue.put_nowait(frame)
+        except queue.Full:
+            try:
+                frame_queue.get_nowait() # ทิ้งเฟรมเก่า
+                frame_queue.put_nowait(frame) # ใส่เฟรมใหม่
+            except queue.Empty:
+                pass
 
         frame_count += 1
         # Simulate camera hardware delay (approx 30 FPS)
@@ -85,7 +94,12 @@ def consumer_thread():
         # except queue.Empty:
         #     continue
         # results = model(frame, verbose=False)
-        pass # Placeholder
+        # pass # Placeholder
+        try:
+            frame = frame_queue.get(timeout=1.0)
+        except queue.Empty:
+            continue
+        results = model(frame, verbose=False)
             
         # --- Update & Print Metrics (Do not modify) ---
         processed_count += 1
